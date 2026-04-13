@@ -12,36 +12,38 @@ export interface User {
 // Pet types
 export interface Pet {
   id: string;
-  user_id: string;
+  userId: string;
   name: string;
-  type: 'dog' | 'cat' | 'bird' | 'rabbit' | 'hamster' | 'other';
+  type: string;
   breed: string;
-  gender: 'male' | 'female';
-  date_of_birth: string;
-  profile_picture_url?: string;
-  created_at: string;
+  gender: 'male' | 'female' | 'other';
+  dateOfBirth: string;
+  profilePictureUrl?: string;
+  createdAt: string;
 }
 
 // Care task types
-export interface CareTask {
+export interface Task {
   id: string;
-  pet_id: string;
-  type: 'feeding' | 'grooming' | 'vet_checkup' | 'medication' | 'exercise' | 'bathing' | 'cleaning' | 'other';
+  petId: string;
+  type: string;
   title: string;
   description?: string;
-  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly' | 'once';
-  next_due_date: string;
-  reminder_time?: string;
-  created_at: string;
+  frequency: 'daily' | 'weekly' | 'monthly' | 'one-time';
+  nextDueDate: string;
+  isCompleted: boolean;
+  reminderTime?: string;
+  createdAt: string;
 }
 
 // Care history types
 export interface CareHistory {
   id: string;
-  task_id: string;
-  completed_at: string;
+  petId: string;
+  taskId: string;
+  taskType: string;
+  completedAt: string;
   notes?: string;
-  created_at: string;
 }
 
 // API Response types

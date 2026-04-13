@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loginWithEmail } from '@/lib/auth-service';
+import { verifyToken, extractTokenFromHeader } from '@/lib/auth-service';
 import { withCORS, handleCORSPreflight } from '@/lib/auth-middleware';
 import { ApiResponse } from '@/types';
 
@@ -7,32 +7,30 @@ export async function OPTIONS(_request: NextRequest) {
   return handleCORSPreflight();
 }
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { email, password } = body;
+    const token = extractTokenFromHeader(request.headers.get('authorization') || '');
 
-    // Validate input
-    if (!email || !password) {
+    if (!token) {
       return withCORS(
         NextResponse.json(
           {
             success: false,
-            error: 'Missing required fields: email, password',
+            error: 'Missing authorization token',
           } as ApiResponse<null>,
-          { status: 400 }
+          { status: 401 }
         )
       );
     }
 
-    const result = await loginWithEmail(email, password);
+    const user = await verifyToken(token);
 
-    if (result.error) {
+    if (!user) {
       return withCORS(
         NextResponse.json(
           {
             success: false,
-            error: result.error,
+            error: 'Invalid or expired token',
           } as ApiResponse<null>,
           { status: 401 }
         )
@@ -42,18 +40,15 @@ export async function POST(request: NextRequest) {
     return withCORS(
       NextResponse.json({
         success: true,
-        data: {
-          user: result.user,
-          token: result.token,
-        },
-      } as ApiResponse<{ user: any; token: string }>)
+        data: user,
+      } as ApiResponse<any>)
     );
   } catch (error) {
     return withCORS(
       NextResponse.json(
         {
           success: false,
-          error: error instanceof Error ? error.message : 'Login failed',
+          error: error instanceof Error ? error.message : 'Failed to fetch user',
         } as ApiResponse<null>,
         { status: 500 }
       )

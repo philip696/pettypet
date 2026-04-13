@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { hashPassword } from '@/lib/auth';
 import { ApiResponse, User } from '@/types';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { data: users, error } = await supabase
       .from('users')
