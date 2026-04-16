@@ -1,6 +1,7 @@
 name = "pettypet"
 workers_dev = true
 main = "dist/worker.js"
+compatibility_date = "2026-04-16"
 
 # Custom build configuration
 build = { command = "npm run build" }
