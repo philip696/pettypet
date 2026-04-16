@@ -10,7 +10,8 @@ export async function createPet(
   type: string,
   breed: string,
   gender: 'male' | 'female' | 'other',
-  dob: string // ISO date format
+  dob: string, // ISO date format
+  profilePictureUrl?: string
 ): Promise<{ success: boolean; data?: Pet; error?: string }> {
   try {
     const { data: pet, error } = await supabaseAdmin
@@ -23,6 +24,7 @@ export async function createPet(
           breed,
           gender,
           date_of_birth: dob,
+          profile_picture_url: profilePictureUrl || null,
           created_at: new Date().toISOString(),
         },
       ])
@@ -46,6 +48,7 @@ export async function createPet(
         breed: pet.breed,
         gender: pet.gender,
         dateOfBirth: pet.date_of_birth,
+        profilePictureUrl: pet.profile_picture_url,
         createdAt: pet.created_at,
       },
     };
@@ -87,6 +90,7 @@ export async function getPet(
         breed: pet.breed,
         gender: pet.gender,
         dateOfBirth: pet.date_of_birth,
+        profilePictureUrl: pet.profile_picture_url,
         createdAt: pet.created_at,
       },
     };
@@ -126,6 +130,7 @@ export async function getUserPets(
       breed: pet.breed,
       gender: pet.gender,
       dateOfBirth: pet.date_of_birth,
+      profilePictureUrl: pet.profile_picture_url,
       createdAt: pet.created_at,
     }));
 
@@ -186,8 +191,7 @@ export async function updatePet(
         type: pet.type,
         breed: pet.breed,
         gender: pet.gender,
-        dateOfBirth: pet.date_of_birth,
-        createdAt: pet.created_at,
+        dateOfBirth: pet.date_of_birth,        profilePictureUrl: pet.profile_picture_url,        createdAt: pet.created_at,
       },
     };
   } catch (error) {

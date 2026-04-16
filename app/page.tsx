@@ -1,22 +1,28 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
 export default function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem('pettypet_token');
+    
+    // Redirect based on authentication status
+    if (token) {
+      router.push('/dashboard');
+    } else {
+      router.push('/login');
+    }
+  }, [router]);
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-neutral via-neutral to-neutral flex items-center justify-center">
       <div className="text-center">
-        <h1 className="text-5xl font-bold text-white mb-4">🐾 PettyPet MVP</h1>
-        <p className="text-xl text-white mb-8">
-          Keep track of your pet&apos;s care and health records
-        </p>
-        <div className="space-x-4">
-          <button className="bg-white text-primary px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition">
-            Sign In
-          </button>
-          <button className="border-2 border-white text-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-primary transition">
-            Sign Up
-          </button>
-        </div>
+        <div className="text-6xl mb-4 animate-bounce">🐾</div>
+        <p className="text-text-primary font-medium text-lg">Redirecting...</p>
       </div>
-    </main>
+    </div>
   );
 }

@@ -8,6 +8,7 @@ export const createPetSchema = z.object({
   breed: z.string().min(1).max(100),
   gender: z.enum(['male', 'female', 'other']),
   dateOfBirth: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)), // ISO date
+  profile_picture_url: z.string().url().optional(),
 });
 
 export const updatePetSchema = z.object({
@@ -16,6 +17,7 @@ export const updatePetSchema = z.object({
   breed: z.string().min(1).max(100).optional(),
   gender: z.enum(['male', 'female', 'other']).optional(),
   dateOfBirth: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional(),
+  profile_picture_url: z.string().url().optional(),
 });
 
 // ============ TASK SCHEMAS ============
@@ -25,16 +27,18 @@ export const createTaskSchema = z.object({
   type: z.string().min(1).max(50), // feeding, bathing, medicine, etc.
   title: z.string().min(1).max(200),
   description: z.string().max(1000).optional().default(''),
-  frequency: z.enum(['daily', 'weekly', 'monthly', 'one-time']),
+  frequency: z.enum(['daily', 'every_2_days', 'every_3_days', 'weekly', 'twice_weekly', 'every_2_weeks', 'monthly', 'every_2_months', 'once', 'as_needed']),
   nextDueDate: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)), // ISO date
+  nextDueTime: z.string().regex(/^\d{2}:\d{2}$/).optional(), // HH:MM format
 });
 
 export const updateTaskSchema = z.object({
   type: z.string().min(1).max(50).optional(),
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(1000).optional(),
-  frequency: z.enum(['daily', 'weekly', 'monthly', 'one-time']).optional(),
+  frequency: z.enum(['daily', 'every_2_days', 'every_3_days', 'weekly', 'twice_weekly', 'every_2_weeks', 'monthly', 'every_2_months', 'once', 'as_needed']).optional(),
   nextDueDate: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional(),
+  nextDueTime: z.string().regex(/^\d{2}:\d{2}$/).optional(), // HH:MM format
   isCompleted: z.boolean().optional(),
 });
 

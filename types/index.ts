@@ -3,6 +3,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  profilePictureUrl?: string;
   auth_provider: 'email' | 'google' | 'github';
   auth_provider_id?: string;
   password_hash?: string;
@@ -29,10 +30,10 @@ export interface Task {
   type: string;
   title: string;
   description?: string;
-  frequency: 'daily' | 'weekly' | 'monthly' | 'one-time';
+  frequency: 'daily' | 'weekly' | 'monthly' | 'once';
   nextDueDate: string;
+  nextDueTime?: string;
   isCompleted: boolean;
-  reminderTime?: string;
   createdAt: string;
 }
 

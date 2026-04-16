@@ -1,0 +1,56 @@
+name = "pettypet"
+type = "javascript"
+account_id = ""  # Set via environment variable
+workers_dev = true
+route = ""
+zone_id = ""
+
+# Environment configuration
+[env.production]
+name = "pettypet-prod"
+routes = [
+  { pattern = "pettypet.com/*", zone_name = "pettypet.com" }
+]
+
+[env.staging]
+name = "pettypet-staging"
+workers_dev = true
+
+# Build configuration for Next.js
+[build]
+command = "npm run build"
+cwd = "./"
+watch_paths = ["src/**/*.ts", "src/**/*.tsx", "app/**/*.ts", "app/**/*.tsx"]
+
+[build.upload]
+format = "modules"
+main = "./dist/worker.js"
+
+# Secrets binding (configured via GitHub Actions)
+[[env.production.vars]]
+binding = "SUPABASE_URL"
+text = ""
+
+[[env.production.vars]]
+binding = "SUPABASE_KEY"
+text = ""
+
+[[env.production.vars]]
+binding = "JWT_SECRET"
+text = ""
+
+# CORS headers
+[env.production.routes]
+pattern = "*"
+zone_name = "pettypet.com"
+
+# API routes
+[[routes]]
+pattern = "/api/*"
+zone_name = ""
+custom_domain = true
+
+# Static assets
+[[routes]]
+pattern = "/public/*"
+zone_name = ""

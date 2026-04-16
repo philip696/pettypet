@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       breed: body.breed,
       gender: body.gender,
       dateOfBirth: body.dateOfBirth,
+      profile_picture_url: body.profile_picture_url,
     });
 
     // Create pet
@@ -46,7 +47,8 @@ export async function POST(request: NextRequest) {
       validatedData.type,
       validatedData.breed,
       validatedData.gender,
-      validatedData.dateOfBirth
+      validatedData.dateOfBirth,
+      validatedData.profile_picture_url
     );
 
     if (!result.success) {

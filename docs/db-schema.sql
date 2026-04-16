@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   email VARCHAR(255) UNIQUE NOT NULL,
   name VARCHAR(255) NOT NULL,
+  profile_picture_url VARCHAR(500),
   auth_provider VARCHAR(50) NOT NULL DEFAULT 'email',
   auth_provider_id VARCHAR(255),
   password_hash VARCHAR(255),
@@ -17,7 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Create index on email for faster lookups
-CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 
 -- Pets table
 CREATE TABLE IF NOT EXISTS pets (
@@ -34,7 +35,7 @@ CREATE TABLE IF NOT EXISTS pets (
 );
 
 -- Create index for user_id lookups
-CREATE INDEX idx_pets_user_id ON pets(user_id);
+CREATE INDEX IF NOT EXISTS idx_pets_user_id ON pets(user_id);
 
 -- Care tasks table
 CREATE TABLE IF NOT EXISTS care_tasks (
@@ -45,16 +46,17 @@ CREATE TABLE IF NOT EXISTS care_tasks (
   description TEXT,
   frequency VARCHAR(50) NOT NULL,
   next_due_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  is_completed BOOLEAN DEFAULT false,
   reminder_time TIME,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create index for pet_id lookups
-CREATE INDEX idx_care_tasks_pet_id ON care_tasks(pet_id);
+CREATE INDEX IF NOT EXISTS idx_care_tasks_pet_id ON care_tasks(pet_id);
 
 -- Create index for next_due_date for reminders
-CREATE INDEX idx_care_tasks_next_due_date ON care_tasks(next_due_date);
+CREATE INDEX IF NOT EXISTS idx_care_tasks_next_due_date ON care_tasks(next_due_date);
 
 -- Care history table
 CREATE TABLE IF NOT EXISTS care_history (
@@ -66,10 +68,10 @@ CREATE TABLE IF NOT EXISTS care_history (
 );
 
 -- Create index for task_id lookups
-CREATE INDEX idx_care_history_task_id ON care_history(task_id);
+CREATE INDEX IF NOT EXISTS idx_care_history_task_id ON care_history(task_id);
 
 -- Create index for completed_at for analytics
-CREATE INDEX idx_care_history_completed_at ON care_history(completed_at);
+CREATE INDEX IF NOT EXISTS idx_care_history_completed_at ON care_history(completed_at);
 
 -- Enable Row Level Security (RLS) for security
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;

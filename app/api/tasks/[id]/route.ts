@@ -49,6 +49,7 @@ export async function PUT(
 
     // Parse and validate request body
     const body = await request.json();
+    console.log('PUT /api/tasks - Request body:', body);
     const validatedData = updateTaskSchema.parse(body);
 
     // Update task
@@ -138,7 +139,7 @@ export async function DELETE(
     }
 
     // Delete task
-    const result = await deleteTask(taskId);
+    const result = await deleteTask(taskId, userId);
 
     if (!result.success) {
       return withCORS(

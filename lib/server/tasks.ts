@@ -9,10 +9,18 @@ export async function createTask(
   type: string,
   title: string,
   description: string,
-  frequency: string, // daily, weekly, monthly, one-time
-  nextDueDate: string // ISO date format
+  frequency: string, // daily, weekly, monthly, once
+  nextDueDate: string, // ISO date format or timestamp
+  nextDueTime?: string // HH:MM format
 ): Promise<{ success: boolean; data?: Task; error?: string }> {
   try {
+    // Ensure nextDueDate is a valid ISO timestamp
+    let dueDateTime = nextDueDate;
+    if (!nextDueDate.includes('T')) {
+      // If it's just a date, add time
+      dueDateTime = `${nextDueDate}T00:00:00Z`;
+    }
+
     const { data: task, error } = await supabaseAdmin
       .from('care_tasks')
       .insert([
@@ -22,7 +30,8 @@ export async function createTask(
           title,
           description,
           frequency,
-          next_due_date: nextDueDate,
+          next_due_date: dueDateTime,
+          reminder_time: nextDueTime || null,
           is_completed: false,
           created_at: new Date().toISOString(),
         },
@@ -47,6 +56,7 @@ export async function createTask(
         description: task.description,
         frequency: task.frequency,
         nextDueDate: task.next_due_date,
+        nextDueTime: task.reminder_time,
         isCompleted: task.is_completed,
         createdAt: task.created_at,
       },
@@ -87,6 +97,7 @@ export async function getTasksByPet(
       description: task.description,
       frequency: task.frequency,
       nextDueDate: task.next_due_date,
+      nextDueTime: task.reminder_time,
       isCompleted: task.is_completed,
       createdAt: task.created_at,
     }));
@@ -114,6 +125,7 @@ export async function updateTask(
     description: string;
     frequency: string;
     nextDueDate: string;
+    nextDueTime: string;
     isCompleted: boolean;
   }>
 ): Promise<{ success: boolean; data?: Task; error?: string }> {
@@ -125,6 +137,7 @@ export async function updateTask(
     if (updates.description !== undefined) dbUpdates.description = updates.description;
     if (updates.frequency !== undefined) dbUpdates.frequency = updates.frequency;
     if (updates.nextDueDate !== undefined) dbUpdates.next_due_date = updates.nextDueDate;
+    if (updates.nextDueTime !== undefined) dbUpdates.reminder_time = updates.nextDueTime;
     if (updates.isCompleted !== undefined) dbUpdates.is_completed = updates.isCompleted;
 
     const { data: task, error } = await supabaseAdmin
@@ -151,6 +164,7 @@ export async function updateTask(
         description: task.description,
         frequency: task.frequency,
         nextDueDate: task.next_due_date,
+        nextDueTime: task.reminder_time,
         isCompleted: task.is_completed,
         createdAt: task.created_at,
       },
@@ -189,9 +203,7 @@ export async function completeTask(
       .from('care_history')
       .insert([
         {
-          pet_id: task.pet_id,
           task_id: taskId,
-          task_type: task.type,
           completed_at: new Date().toISOString(),
           notes: '',
         },
@@ -234,9 +246,9 @@ export async function completeTask(
       success: true,
       data: {
         id: history.id,
-        petId: history.pet_id,
+        petId: task.pet_id,
         taskId: history.task_id,
-        taskType: history.task_type,
+        taskType: task.type,
         completedAt: history.completed_at,
         notes: history.notes,
       },
@@ -253,9 +265,38 @@ export async function completeTask(
  * Delete a task
  */
 export async function deleteTask(
-  taskId: string
+  taskId: string,
+  userId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Verify ownership
+    const { data: task, error: taskError } = await supabaseAdmin
+      .from('care_tasks')
+      .select('pet_id')
+      .eq('id', taskId)
+      .single();
+
+    if (taskError || !task) {
+      return {
+        success: false,
+        error: 'Task not found',
+      };
+    }
+
+    // Check if pet belongs to user
+    const { data: pet, error: petError } = await supabaseAdmin
+      .from('pets')
+      .select('user_id')
+      .eq('id', task.pet_id)
+      .single();
+
+    if (petError || !pet || pet.user_id !== userId) {
+      return {
+        success: false,
+        error: 'Unauthorized',
+      };
+    }
+
     const { error } = await supabaseAdmin
       .from('care_tasks')
       .delete()

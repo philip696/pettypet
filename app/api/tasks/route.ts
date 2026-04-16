@@ -31,6 +31,9 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
+    console.log('POST /api/tasks - Request body:', body);
+    console.log('POST /api/tasks - UserId:', userId);
+    
     const validatedData = createTaskSchema.parse({
       petId: body.petId,
       type: body.type,
@@ -38,6 +41,7 @@ export async function POST(request: NextRequest) {
       description: body.description,
       frequency: body.frequency,
       nextDueDate: body.nextDueDate,
+      nextDueTime: body.nextDueTime,
     });
 
     // Verify pet ownership
@@ -61,7 +65,8 @@ export async function POST(request: NextRequest) {
       validatedData.title,
       validatedData.description || '',
       validatedData.frequency,
-      validatedData.nextDueDate
+      validatedData.nextDueDate,
+      validatedData.nextDueTime
     );
 
     if (!result.success) {
