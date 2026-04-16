@@ -1,56 +1,34 @@
 name = "pettypet"
 type = "javascript"
-account_id = ""  # Set via environment variable
+account_id = ""  # Set via GitHub Actions secret or local wrangler config
 workers_dev = true
-route = ""
-zone_id = ""
+main = "dist/worker.js"
 
-# Environment configuration
+# Development environment
+[env.development]
+name = "pettypet-dev"
+workers_dev = true
+
+# Production environment
 [env.production]
 name = "pettypet-prod"
-routes = [
-  { pattern = "pettypet.com/*", zone_name = "pettypet.com" }
-]
+workers_dev = false
+[env.production]
+name = "pettypet-prod"
+workers_dev = false
 
-[env.staging]
-name = "pettypet-staging"
-workers_dev = true
-
-# Build configuration for Next.js
+# Build configuration
 [build]
 command = "npm run build"
 cwd = "./"
-watch_paths = ["src/**/*.ts", "src/**/*.tsx", "app/**/*.ts", "app/**/*.tsx"]
 
 [build.upload]
 format = "modules"
 main = "./dist/worker.js"
 
-# Secrets binding (configured via GitHub Actions)
-[[env.production.vars]]
-binding = "SUPABASE_URL"
-text = ""
+# Environment variables
+[env.development.vars]
+NODE_ENV = "development"
 
-[[env.production.vars]]
-binding = "SUPABASE_KEY"
-text = ""
-
-[[env.production.vars]]
-binding = "JWT_SECRET"
-text = ""
-
-# CORS headers
-[env.production.routes]
-pattern = "*"
-zone_name = "pettypet.com"
-
-# API routes
-[[routes]]
-pattern = "/api/*"
-zone_name = ""
-custom_domain = true
-
-# Static assets
-[[routes]]
-pattern = "/public/*"
-zone_name = ""
+[env.production.vars]
+NODE_ENV = "production"
