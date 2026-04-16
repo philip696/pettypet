@@ -13,9 +13,6 @@ workers_dev = true
 [env.production]
 name = "pettypet-prod"
 workers_dev = false
-[env.production]
-name = "pettypet-prod"
-workers_dev = false
 
 # Build configuration
 [build]
