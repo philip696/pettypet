@@ -38,16 +38,6 @@ const taskIcons: Record<string, string> = {
   default: '📋',
 };
 
-const taskColors: Record<string, string> = {
-  feeding: 'bg-primary',
-  medicine: 'bg-primary',
-  vet: 'bg-red-500',
-  grooming: 'bg-primary',
-  exercise: 'bg-green-500',
-  training: 'bg-primary',
-  default: 'bg-primary',
-};
-
 const frequencyColors: Record<string, string> = {
   daily: 'ring-2 ring-primary',
   every_2_days: 'ring-2 ring-border-color',
