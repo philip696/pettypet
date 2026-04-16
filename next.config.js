@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // Enable standalone output for Cloudflare Workers
+  // Standalone output for both Cloudflare Workers and Pages
   output: 'standalone',
 
   // Environment variables

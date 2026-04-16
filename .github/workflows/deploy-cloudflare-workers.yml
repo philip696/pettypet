@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Workers
+name: Deploy to Cloudflare Workers & Pages
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
     
     environment:
       name: production
-      url: https://${{ secrets.CLOUDFLARE_ACCOUNT_ID }}.workers.dev
+      url: https://pettypet.philip-dewanto.workers.dev
     
     steps:
       - uses: actions/checkout@v4
@@ -25,39 +25,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Install wrangler
-        run: npm install -g wrangler
-      
       - name: Build application
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: production
-      
-      - name: Generate Cloudflare Worker
-        run: |
-          cat > dist/worker.js << 'EOF'
-          export default {
-            async fetch(request) {
-              const url = new URL(request.url);
-              
-              // Route API calls
-              if (url.pathname.startsWith('/api')) {
-                return new Response('API Gateway', { status: 200 });
-              }
-              
-              // Route static files
-              if (url.pathname.startsWith('/public')) {
-                return fetch(request);
-              }
-              
-              // Route to Next.js
-              return fetch('http://localhost:3000' + url.pathname);
-            }
-          }
-          EOF
       
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
@@ -73,3 +46,43 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  
+  deploy-pages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    
+    environment:
+      name: production-pages
+      url: https://pettypet-pages.philip-dewanto.workers.dev
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build static site
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_API_URL: https://pettypet.philip-dewanto.workers.dev
+          NODE_ENV: production
+      
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: pettypet-pages
+          directory: out
+          productionBranch: main
+          wranglerVersion: '3.x'

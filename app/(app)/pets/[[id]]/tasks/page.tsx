@@ -783,3 +783,7 @@ export default function TasksPage() {
     </div>
   );
 }
+
+export async function generateStaticParams() {
+  return [];
+}

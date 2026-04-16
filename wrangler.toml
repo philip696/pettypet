@@ -6,15 +6,12 @@ compatibility_date = "2026-04-16"
 # Custom build configuration
 build = { command = "npm run build" }
 
-# Development environment
-[env.development]
-name = "pettypet-dev"
-workers_dev = true
+# Pages configuration
+pages_build_caching = true
 
-# Production environment
-[env.production]
-name = "pettypet-prod"
-workers_dev = false
+# Cloudflare Pages deployment
+[env.production.pages_build_caching]
+value = true
 
 # Environment variables
 [env.development.vars]
@@ -22,3 +19,7 @@ NODE_ENV = "development"
 
 [env.production.vars]
 NODE_ENV = "production"
+
+# Triggers - auto-deploy when main branch updates
+[triggers]
+crons = []
