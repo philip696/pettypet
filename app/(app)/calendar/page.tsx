@@ -152,48 +152,6 @@ const formatDateForComparison = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-// Helper function to calculate next due date based on frequency
-const calculateNextDueDate = (currentDate: string, frequency: string): string => {
-  const date = new Date(currentDate);
-  
-  switch (frequency) {
-    case 'daily':
-      date.setDate(date.getDate() + 1);
-      break;
-    case 'every_2_days':
-      date.setDate(date.getDate() + 2);
-      break;
-    case 'every_3_days':
-      date.setDate(date.getDate() + 3);
-      break;
-    case 'weekly':
-      date.setDate(date.getDate() + 7);
-      break;
-    case 'twice_weekly':
-      date.setDate(date.getDate() + 3);
-      break;
-    case 'every_2_weeks':
-      date.setDate(date.getDate() + 14);
-      break;
-    case 'monthly':
-      date.setMonth(date.getMonth() + 1);
-      break;
-    case 'every_2_months':
-      date.setMonth(date.getMonth() + 2);
-      break;
-    case 'once':
-    case 'as_needed':
-    default:
-      return currentDate; // No rescheduling for one-time or as-needed tasks
-  }
-  
-  // Format as YYYY-MM-DD
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
 export default function CalendarPage() {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
