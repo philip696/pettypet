@@ -1,7 +1,9 @@
 name = "pettypet"
-type = "javascript"
 workers_dev = true
 main = "dist/worker.js"
+
+# Custom build configuration
+build = { command = "npm run build" }
 
 # Development environment
 [env.development]
@@ -12,11 +14,6 @@ workers_dev = true
 [env.production]
 name = "pettypet-prod"
 workers_dev = false
-
-# Build configuration
-[build]
-command = "npm run build"
-cwd = "./"
 
 # Environment variables
 [env.development.vars]

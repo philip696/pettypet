@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && mkdir -p dist && cp src/worker.ts dist/worker.js",
     "start": "next start",
     "lint": "next lint"
   },
