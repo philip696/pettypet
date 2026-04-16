@@ -1,6 +1,5 @@
 name = "pettypet"
 type = "javascript"
-account_id = ""  # Set via GitHub Actions secret or local wrangler config
 workers_dev = true
 main = "dist/worker.js"
 
@@ -18,10 +17,6 @@ workers_dev = false
 [build]
 command = "npm run build"
 cwd = "./"
-
-[build.upload]
-format = "modules"
-main = "./dist/worker.js"
 
 # Environment variables
 [env.development.vars]
