@@ -63,16 +63,16 @@ export default {
         // Route specific API endpoints
         switch (true) {
           // Supabase proxy endpoints
-          case apiPath.startsWith('/auth/'):
+          case apiPath.startsWith('/auth'):
             return await handleAuthEndpoint(apiPath, method, body, env, corsHeaders);
 
-          case apiPath.startsWith('/tasks/'):
+          case apiPath.startsWith('/tasks'):
             return await handleTasksEndpoint(apiPath, method, body, env, headers, corsHeaders);
 
-          case apiPath.startsWith('/pets/'):
+          case apiPath.startsWith('/pets'):
             return await handlePetsEndpoint(apiPath, method, body, env, headers, corsHeaders);
 
-          case apiPath.startsWith('/users/'):
+          case apiPath.startsWith('/users'):
             return await handleUsersEndpoint(apiPath, method, body, env, headers, corsHeaders);
 
           default:
