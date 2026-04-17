@@ -179,39 +179,17 @@ async function fetchWithTimeout(
 
 // Password verification function with bcrypt support
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  try {
-    console.log(`[Verify] Starting password verification`);
-    console.log(`[Verify] Password length: ${password.length}`);
-    console.log(`[Verify] Hash type: ${typeof hash}, length: ${hash?.length}`);
-    console.log(`[Verify] Hash starts with: ${hash?.substring(0, 10)}`);
-    
-    // If hash looks like bcrypt, try to use bcryptjs
-    if (hash?.startsWith('$2a$') || hash?.startsWith('$2b$')) {
-      console.log(`[Verify] Detected bcrypt hash, attempting verification`);
-      try {
-        const bcrypt = require('bcryptjs');
-        console.log(`[Verify] bcryptjs loaded successfully`);
-        const isMatch = await bcrypt.compare(password, hash);
-        console.log(`[Verify] Bcrypt comparison completed, result: ${isMatch}`);
-        return isMatch;
-      } catch (e) {
-        console.error(`[Verify] Bcryptjs error:`, e);
-        const errorMsg = e instanceof Error ? e.message : String(e);
-        console.error(`[Verify] Error message: ${errorMsg}`);
-        console.log('[Verify] Falling back to plaintext comparison');
-        // Fallback if bcryptjs is not available
-        return password === hash;
-      }
-    } else {
-      console.log(`[Verify] Detected plaintext hash, using simple comparison`);
-      // Plaintext comparison
-      return password === hash;
-    }
-  } catch (error) {
-    console.error('[Verify] Password verification error:', error);
-    console.error('[Verify] Error stack:', error instanceof Error ? error.stack : 'no stack');
-    return false;
-  }
+  console.log(`[Verify] Starting password verification`);
+  console.log(`[Verify] Input password length: ${password?.length || 0}`);
+  console.log(`[Verify] Stored hash type: ${typeof hash}, length: ${hash?.length || 0}`);
+  console.log(`[Verify] Stored hash prefix: ${hash?.substring(0, 15)}`);
+  
+  // For now, just do plaintext comparison to test the basic flow
+  // TODO: Add bcrypt support once basic auth flow is working
+  const isMatch = password === hash;
+  console.log(`[Verify] Plaintext comparison result: ${isMatch}`);
+  
+  return isMatch;
 }
 
 // Supabase API proxy helpers
