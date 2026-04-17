@@ -2,15 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // Use standalone for full SSR support with dynamic routes
-  // Deploy to Cloudflare Workers which supports Node.js
-  output: 'standalone',
+  // Static export for Cloudflare Pages deployment
+  // Server deployed separately to Cloudflare Workers
+  output: 'export',
+  trailingSlash: false,
 
   // Environment variables
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://pettypet.philip-dewanto.workers.dev',
   },
 
   // Redirect HTTP to HTTPS in production

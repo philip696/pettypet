@@ -1,11 +1,13 @@
-# Cloudflare Workers configuration
-# GitHub Actions uses wrangler-action to deploy this
-# NOT for Cloudflare Pages auto-deployment
+# Cloudflare Pages configuration for frontend
+# Server is deployed separately to Workers
 
-name = "pettypet"
-main = "src/worker.ts"
+name = "pettypet-pages"
 compatibility_date = "2026-04-16"
-compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "out"
 
 [build]
 command = "npm run build"
+destination_dir = "out"
+
+[build.environment]
+NEXT_PUBLIC_API_URL = "https://pettypet.philip-dewanto.workers.dev"

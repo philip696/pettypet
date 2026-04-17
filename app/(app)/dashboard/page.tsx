@@ -1,9 +1,12 @@
 'use client';
 
+'use client';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { PetDetailModal } from '@/app/components/PetDetailModal';
 
 interface Pet {
   id: string;
@@ -36,6 +39,8 @@ const petEmojis: Record<string, string> = {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [selectedPetId, setSelectedPetId] = useState<string | null>(null);
+  const [showPetModal, setShowPetModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -221,7 +226,7 @@ export default function DashboardPage() {
                   key={pet.id}
                   variants={itemVariants}
                   whileHover={{ scale: 1.02, y: -4 }}
-                  onClick={() => router.push(`/pets/${pet.id}`)}
+                  onClick={() => { setSelectedPetId(pet.id); setShowPetModal(true); }}
                   className="group cursor-pointer"
                 >
                   <div className="card-hover bg-white rounded-2xl overflow-hidden">
@@ -343,6 +348,12 @@ export default function DashboardPage() {
               </motion.button>
             </Link>
           </motion.div>
+
+      <PetDetailModal
+        petId={selectedPetId}
+        isOpen={showPetModal}
+        onClose={() => setShowPetModal(false)}
+      />
         </div>
       </main>
     );
