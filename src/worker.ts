@@ -311,9 +311,10 @@ async function handleSignup(
 
     if (!createResponse.ok) {
       const error = await createResponse.text();
+      console.error('Supabase create user error:', error, 'Status:', createResponse.status);
       return new Response(
         JSON.stringify({ error: 'Signup failed', details: error }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: createResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
