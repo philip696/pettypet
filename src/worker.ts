@@ -64,18 +64,23 @@ export default {
         switch (true) {
           // Supabase proxy endpoints
           case apiPath.startsWith('/auth'):
+            console.log(`[Route] Matched /auth endpoint`);
             return await handleAuthEndpoint(apiPath, method, body, env, corsHeaders);
 
           case apiPath.startsWith('/tasks'):
+            console.log(`[Route] Matched /tasks endpoint`);
             return await handleTasksEndpoint(apiPath, method, body, env, headers, corsHeaders);
 
           case apiPath.startsWith('/pets'):
+            console.log(`[Route] Matched /pets endpoint`);
             return await handlePetsEndpoint(apiPath, method, body, env, headers, corsHeaders);
 
           case apiPath.startsWith('/users'):
+            console.log(`[Route] Matched /users endpoint`);
             return await handleUsersEndpoint(apiPath, method, body, env, headers, corsHeaders);
 
           default:
+            console.log(`[Route] No match for path: ${apiPath}`);
             return new Response(
               JSON.stringify({ error: 'Not Found' }),
               { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -234,6 +239,7 @@ async function callSupabaseAPI(
 ): Promise<Response> {
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
   const apiKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !apiKey) {
     return new Response(
@@ -242,11 +248,15 @@ async function callSupabaseAPI(
     );
   }
 
+  // Use service role key if available (for RLS bypass), otherwise use anon key
+  const key = serviceKey || apiKey;
+  console.log(`[Supabase] Using ${serviceKey ? 'service role' : 'anon'} key`);
+
   const requestInit: RequestInit = {
     method,
     headers: {
       'apikey': apiKey,
-      'Authorization': `Bearer ${apiKey}`,
+      'Authorization': `Bearer ${key}`,
       'Content-Type': 'application/json',
       ...headers,
     },
@@ -258,9 +268,14 @@ async function callSupabaseAPI(
 
   try {
     const url = `${supabaseUrl}${endpoint}`;
-    console.log(`Calling Supabase: ${method} ${url}`);
+    console.log(`[Supabase] ${method} ${url}`);
     const response = await fetch(url, requestInit);
     const data = await response.text();
+
+    console.log(`[Supabase] Response status: ${response.status}`);
+    if (!response.ok) {
+      console.error(`[Supabase] Error response: ${data.substring(0, 300)}`);
+    }
 
     return new Response(data, {
       status: response.status,
@@ -269,7 +284,7 @@ async function callSupabaseAPI(
       },
     });
   } catch (error) {
-    console.error('Supabase API error:', error);
+    console.error('[Supabase] Fetch error:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to call Supabase API', details: String(error) }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
@@ -599,16 +614,25 @@ async function handlePetsEndpoint(
   corsHeaders: Record<string, string>
 ): Promise<Response> {
   try {
+    console.log(`[Pets] Handler called with path: ${path}, method: ${method}`);
     // Remove leading /pets if present, since we add it in the API call
     const subPath = path === '/pets' ? '' : path.replace('/pets', '');
+    console.log(`[Pets] Computed subPath: ${subPath}`);
+    const apiEndpoint = `/rest/v1/pets${subPath}`;
+    console.log(`[Pets] Will call Supabase endpoint: ${apiEndpoint}`);
+    
     const response = await callSupabaseAPI(
-      `/rest/v1/pets${subPath}`,
+      apiEndpoint,
       method,
       body,
       env,
       headers
     );
+    
+    console.log(`[Pets] Supabase response status: ${response.status}`);
     const text = await response.text();
+    console.log(`[Pets] Supabase response body: ${text.substring(0, 200)}`);
+    
     return new Response(text, {
       status: response.status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
