@@ -6,6 +6,7 @@ declare global {
     NEXT_PUBLIC_SUPABASE_URL: string;
     NEXT_PUBLIC_SUPABASE_ANON_KEY: string;
     JWT_SECRET: string;
+    SUPABASE_SERVICE_ROLE_KEY: string;
   }
 }
 
@@ -200,16 +201,16 @@ async function handleLogin(
 
   try {
     const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
-    const apiKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY; // Use service key to bypass RLS
 
-    // Query users table to find user and verify password
+    // Query users table to find user and verify password (use service role key)
     const usersResponse = await fetch(
       `${supabaseUrl}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
       {
         method: 'GET',
         headers: {
-          'apikey': apiKey,
-          'Authorization': `Bearer ${apiKey}`,
+          'apikey': env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${serviceKey}`,
         },
       }
     );
@@ -277,14 +278,14 @@ async function handleSignup(
 
   try {
     const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
-    const apiKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY; // Use service key to bypass RLS
 
     // Create new user in database
     const createResponse = await fetch(`${supabaseUrl}/rest/v1/users`, {
       method: 'POST',
       headers: {
-        'apikey': apiKey,
-        'Authorization': `Bearer ${apiKey}`,
+        'apikey': env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${serviceKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
