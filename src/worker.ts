@@ -201,7 +201,14 @@ async function handleLogin(
 
   try {
     const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY; // Use service key to bypass RLS
+    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!serviceKey) {
+      return new Response(
+        JSON.stringify({ error: 'Service role key not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Query users table to find user and verify password (use service role key)
     const usersResponse = await fetch(
@@ -278,7 +285,14 @@ async function handleSignup(
 
   try {
     const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY; // Use service key to bypass RLS
+    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!serviceKey) {
+      return new Response(
+        JSON.stringify({ error: 'Service role key not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Create new user in database
     const createResponse = await fetch(`${supabaseUrl}/rest/v1/users`, {
