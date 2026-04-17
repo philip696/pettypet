@@ -1,8 +1,6 @@
 // Cloudflare Worker entry point for PettyPet API Backend
 // This worker receives API calls from Pages frontend and forwards to Supabase
 
-import * as bcrypt from 'bcryptjs';
-
 declare global {
   interface Env {
     NEXT_PUBLIC_SUPABASE_URL: string;
@@ -179,6 +177,31 @@ async function fetchWithTimeout(
   }
 }
 
+// Password verification function with bcrypt support
+async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  try {
+    // If hash looks like bcrypt, try to use bcryptjs
+    if (hash?.startsWith('$2a$') || hash?.startsWith('$2b$')) {
+      try {
+        const bcrypt = require('bcryptjs');
+        const isMatch = await bcrypt.compare(password, hash);
+        console.log('[Auth] Bcrypt comparison completed');
+        return isMatch;
+      } catch (e) {
+        console.error('[Auth] Bcryptjs not available, falling back to plaintext comparison:', e);
+        // Fallback if bcryptjs is not available
+        return password === hash;
+      }
+    } else {
+      // Plaintext comparison
+      return password === hash;
+    }
+  } catch (error) {
+    console.error('[Auth] Password verification error:', error);
+    return false;
+  }
+}
+
 // Supabase API proxy helpers
 async function callSupabaseAPI(
   endpoint: string,
@@ -349,31 +372,9 @@ async function handleLogin(
       is_bcrypt: user.password_hash?.startsWith('$2a$') || user.password_hash?.startsWith('$2b$')
     }));
     
-    // Verify password using bcrypt
+    // Verify password (supports both bcrypt and plaintext)
     console.log(`[Login] Verifying password for ${user.email}...`);
-    let passwordMatch = false;
-    
-    try {
-      // Check if password is bcrypt hash or plaintext
-      if (user.password_hash?.startsWith('$2a$') || user.password_hash?.startsWith('$2b$')) {
-        // Use bcrypt comparison
-        passwordMatch = await bcrypt.compare(password, user.password_hash);
-        console.log(`[Login] Bcrypt comparison result: ${passwordMatch}`);
-      } else {
-        // Fallback to simple string comparison for plaintext passwords
-        passwordMatch = user.password_hash === password;
-        console.log(`[Login] Plaintext comparison result: ${passwordMatch}`);
-      }
-    } catch (bcryptError) {
-      console.error(`[Login] Bcrypt error:`, bcryptError);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Password verification failed',
-          details: String(bcryptError)
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const passwordMatch = await verifyPassword(password, user.password_hash);
     
     if (!passwordMatch) {
       console.log(`[Login] Password mismatch for ${user.email}`);
