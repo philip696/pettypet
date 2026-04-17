@@ -1,6 +1,15 @@
 // Cloudflare Worker entry point for PettyPet API Backend
 // This worker receives API calls from Pages frontend and forwards to Supabase
 
+// Try to import bcryptjs - it may not be available in all environments
+let bcryptjs: any = null;
+try {
+  bcryptjs = require('bcryptjs');
+  console.log('[Init] bcryptjs loaded successfully');
+} catch (e) {
+  console.warn('[Init] bcryptjs not available:', e instanceof Error ? e.message : String(e));
+}
+
 declare global {
   interface Env {
     NEXT_PUBLIC_SUPABASE_URL: string;
@@ -179,17 +188,40 @@ async function fetchWithTimeout(
 
 // Password verification function with bcrypt support
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  console.log(`[Verify] Starting password verification`);
-  console.log(`[Verify] Input password length: ${password?.length || 0}`);
-  console.log(`[Verify] Stored hash type: ${typeof hash}, length: ${hash?.length || 0}`);
-  console.log(`[Verify] Stored hash prefix: ${hash?.substring(0, 15)}`);
-  
-  // For now, just do plaintext comparison to test the basic flow
-  // TODO: Add bcrypt support once basic auth flow is working
-  const isMatch = password === hash;
-  console.log(`[Verify] Plaintext comparison result: ${isMatch}`);
-  
-  return isMatch;
+  try {
+    if (!password || !hash) {
+      console.log(`[Verify] Missing password or hash`);
+      return false;
+    }
+
+    console.log(`[Verify] Starting password verification`);
+    console.log(`[Verify] Input password length: ${password.length}`);
+    console.log(`[Verify] Stored hash type: ${typeof hash}, length: ${hash.length}`);
+    console.log(`[Verify] Hash starts with: ${hash.substring(0, 15)}`);
+    
+    // Check if hash looks like bcrypt
+    if ((hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) && bcryptjs) {
+      console.log(`[Verify] Detected bcrypt hash format, using bcryptjs`);
+      try {
+        const isMatch = await bcryptjs.compare(password, hash);
+        console.log(`[Verify] Bcryptjs comparison result: ${isMatch}`);
+        return isMatch;
+      } catch (bcryptError) {
+        console.error(`[Verify] Bcryptjs compare error:`, bcryptError instanceof Error ? bcryptError.message : String(bcryptError));
+        // Fall through to plaintext comparison
+      }
+    }
+    
+    // Fallback to plaintext comparison
+    console.log(`[Verify] Using plaintext comparison`);
+    const isMatch = password === hash;
+    console.log(`[Verify] Plaintext comparison result: ${isMatch}`);
+    return isMatch;
+  } catch (error) {
+    console.error('[Verify] Password verification exception:', error instanceof Error ? error.message : String(error));
+    console.error('[Verify] Stack:', error instanceof Error ? error.stack : 'no stack');
+    return false;
+  }
 }
 
 // Supabase API proxy helpers
