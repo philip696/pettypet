@@ -180,24 +180,35 @@ async function fetchWithTimeout(
 // Password verification function with bcrypt support
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   try {
+    console.log(`[Verify] Starting password verification`);
+    console.log(`[Verify] Password length: ${password.length}`);
+    console.log(`[Verify] Hash type: ${typeof hash}, length: ${hash?.length}`);
+    console.log(`[Verify] Hash starts with: ${hash?.substring(0, 10)}`);
+    
     // If hash looks like bcrypt, try to use bcryptjs
     if (hash?.startsWith('$2a$') || hash?.startsWith('$2b$')) {
+      console.log(`[Verify] Detected bcrypt hash, attempting verification`);
       try {
         const bcrypt = require('bcryptjs');
+        console.log(`[Verify] bcryptjs loaded successfully`);
         const isMatch = await bcrypt.compare(password, hash);
-        console.log('[Auth] Bcrypt comparison completed');
+        console.log(`[Verify] Bcrypt comparison completed, result: ${isMatch}`);
         return isMatch;
       } catch (e) {
-        console.error('[Auth] Bcryptjs not available, falling back to plaintext comparison:', e);
+        console.error(`[Verify] Bcryptjs error:`, e);
+        console.error(`[Verify] Error message: ${e.message}`);
+        console.log('[Verify] Falling back to plaintext comparison');
         // Fallback if bcryptjs is not available
         return password === hash;
       }
     } else {
+      console.log(`[Verify] Detected plaintext hash, using simple comparison`);
       // Plaintext comparison
       return password === hash;
     }
   } catch (error) {
-    console.error('[Auth] Password verification error:', error);
+    console.error('[Verify] Password verification error:', error);
+    console.error('[Verify] Error stack:', error instanceof Error ? error.stack : 'no stack');
     return false;
   }
 }
@@ -375,13 +386,15 @@ async function handleLogin(
     // Verify password (supports both bcrypt and plaintext)
     console.log(`[Login] Verifying password for ${user.email}...`);
     const passwordMatch = await verifyPassword(password, user.password_hash);
+    console.log(`[Login] Password match result: ${passwordMatch}`);
     
     if (!passwordMatch) {
       console.log(`[Login] Password mismatch for ${user.email}`);
       return new Response(
         JSON.stringify({ 
           error: 'Invalid email or password',
-          debug: 'Password does not match stored hash'
+          debug: 'Password does not match stored hash',
+          email: user.email
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -408,9 +421,15 @@ async function handleLogin(
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Login error:', error, 'Stack:', error instanceof Error ? error.stack : 'no stack');
+    console.error('Login error:', error);
+    console.error('Login error message:', error instanceof Error ? error.message : String(error));
+    console.error('Login error stack:', error instanceof Error ? error.stack : 'no stack');
     return new Response(
-      JSON.stringify({ error: 'Login failed', details: String(error) }),
+      JSON.stringify({ 
+        error: 'Login failed', 
+        details: String(error),
+        errorType: error instanceof Error ? error.constructor.name : typeof error
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
