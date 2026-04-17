@@ -196,7 +196,8 @@ async function verifyPassword(password: string, hash: string): Promise<boolean> 
         return isMatch;
       } catch (e) {
         console.error(`[Verify] Bcryptjs error:`, e);
-        console.error(`[Verify] Error message: ${e.message}`);
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        console.error(`[Verify] Error message: ${errorMsg}`);
         console.log('[Verify] Falling back to plaintext comparison');
         // Fallback if bcryptjs is not available
         return password === hash;
