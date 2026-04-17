@@ -1,0 +1,14 @@
+# Cloudflare Workers configuration for PettyPet API Backend
+# Configured for Workers deployment (NOT Pages)
+
+name = "pettypet"
+main = "src/worker.ts"
+compatibility_date = "2026-04-16"
+compatibility_flags = ["nodejs_compat"]
+
+# Public environment variables
+vars = { NEXT_PUBLIC_SUPABASE_URL = "https://ajnpsxliqogphkleukbs.supabase.co", NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_FGfyOtT5rC0VwiCUpxlceA_ilKXRRVA" }
+
+# Secrets must be set via Cloudflare dashboard or 'wrangler secret put':
+# - JWT_SECRET
+# - SUPABASE_SERVICE_ROLE_KEY
