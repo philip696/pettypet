@@ -277,22 +277,34 @@ async function handleLogin(
     if (!Array.isArray(users) || users.length === 0) {
       console.log(`[Login] No user found with email: ${email}`);
       return new Response(
-        JSON.stringify({ error: 'Invalid email or password', details: 'User not found' }),
+        JSON.stringify({ 
+          error: 'Invalid email or password',
+          debug: 'User not found in database'
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const user = users[0];
+    console.log(`[Login] User object:`, JSON.stringify({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      password_hash_length: user.password_hash?.length,
+      has_password_hash: !!user.password_hash
+    }));
     
     // Simple password verification (in production, use bcrypt or similar)
     // For now, just check if password matches (plaintext - NOT secure!)
-    console.log(`[Login] User found: ${user.email}, checking password...`);
-    console.log(`[Login] Password provided: ${password}, stored hash: ${user.password_hash}`);
+    console.log(`[Login] Comparing: provided="${password}" vs stored="${user.password_hash}"`);
     
     if (user.password_hash !== password) {
       console.log(`[Login] Password mismatch for ${user.email}`);
       return new Response(
-        JSON.stringify({ error: 'Invalid email or password', details: 'Password mismatch' }),
+        JSON.stringify({ 
+          error: 'Invalid email or password',
+          debug: `Password mismatch: got "${password}" but expected "${user.password_hash}"`
+        }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -370,8 +382,22 @@ async function handleSignup(
     if (!createResponse.ok) {
       const error = await createResponse.text();
       console.error('Supabase create user error:', error, 'Status:', createResponse.status);
+      
+      // Try to parse as JSON for better error messages
+      let errorDetail = error;
+      try {
+        const jsonError = JSON.parse(error);
+        errorDetail = jsonError.message || jsonError.error || error;
+      } catch (e) {
+        // Keep the raw error
+      }
+      
       return new Response(
-        JSON.stringify({ error: 'Signup failed', details: error }),
+        JSON.stringify({ 
+          error: 'Signup failed', 
+          details: errorDetail,
+          statusCode: createResponse.status
+        }),
         { status: createResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
