@@ -150,7 +150,7 @@ async function callSupabaseAPI(
 // Authentication endpoints
 async function handleAuthEndpoint(
   path: string,
-  method: string,
+  _method: string,
   body: any,
   env: Env,
   corsHeaders: Record<string, string>
