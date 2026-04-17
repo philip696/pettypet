@@ -82,6 +82,20 @@ export default {
         });
       }
 
+      // Debug endpoint to verify configuration
+      if (pathname === '/debug') {
+        return new Response(
+          JSON.stringify({
+            status: 'debug',
+            hasServiceKey: !!env.SUPABASE_SERVICE_ROLE_KEY,
+            hasJwtSecret: !!env.JWT_SECRET,
+            supabaseUrl: env.NEXT_PUBLIC_SUPABASE_URL,
+            anonKeyPrefix: env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.substring(0, 20) + '...',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Non-API requests - return ready status
       return new Response('Worker Ready', { status: 200 });
     } catch (error) {
@@ -93,6 +107,22 @@ export default {
     }
   },
 };
+
+// Timeout wrapper for fetch calls
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeoutMs: number = 10000
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 // Supabase API proxy helpers
 async function callSupabaseAPI(
@@ -211,7 +241,7 @@ async function handleLogin(
     }
 
     // Query users table to find user and verify password (use service role key)
-    const usersResponse = await fetch(
+    const usersResponse = await fetchWithTimeout(
       `${supabaseUrl}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
       {
         method: 'GET',
@@ -296,7 +326,7 @@ async function handleSignup(
     }
 
     // Create new user in database
-    const createResponse = await fetch(`${supabaseUrl}/rest/v1/users`, {
+    const createResponse = await fetchWithTimeout(`${supabaseUrl}/rest/v1/users`, {
       method: 'POST',
       headers: {
         'apikey': env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
