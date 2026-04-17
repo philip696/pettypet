@@ -96,6 +96,59 @@ export default {
         );
       }
 
+      // Debug endpoint to check user in database
+      if (pathname.startsWith('/debug/user/')) {
+        const email = pathname.replace('/debug/user/', '');
+        const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
+        const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!serviceKey) {
+          return new Response(
+            JSON.stringify({ error: 'Service key not configured' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+
+        try {
+          const response = await fetchWithTimeout(
+            `${supabaseUrl}/rest/v1/users?email=eq.${encodeURIComponent(email)}`,
+            {
+              method: 'GET',
+              headers: {
+                'apikey': env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${serviceKey}`,
+              },
+            }
+          );
+
+          const users = await response.json();
+          if (Array.isArray(users) && users.length > 0) {
+            const user = users[0];
+            return new Response(
+              JSON.stringify({
+                found: true,
+                email: user.email,
+                name: user.name,
+                password_hash: user.password_hash,
+                password_hash_type: typeof user.password_hash,
+                password_hash_length: user.password_hash?.length,
+              }),
+              { status: 200, headers: { 'Content-Type': 'application/json' } }
+            );
+          } else {
+            return new Response(
+              JSON.stringify({ found: false, email }),
+              { status: 404, headers: { 'Content-Type': 'application/json' } }
+            );
+          }
+        } catch (error) {
+          return new Response(
+            JSON.stringify({ error: String(error) }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
       // Non-API requests - return ready status
       return new Response('Worker Ready', { status: 200 });
     } catch (error) {
