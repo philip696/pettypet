@@ -1,6 +1,8 @@
 // Cloudflare Worker entry point for PettyPet API Backend
 // This worker receives API calls from Pages frontend and forwards to Supabase
 
+import * as bcrypt from 'bcryptjs';
+
 declare global {
   interface Env {
     NEXT_PUBLIC_SUPABASE_URL: string;
@@ -343,20 +345,42 @@ async function handleLogin(
       id: user.id,
       email: user.email,
       name: user.name,
-      password_hash_length: user.password_hash?.length,
-      has_password_hash: !!user.password_hash
+      password_hash_type: typeof user.password_hash,
+      is_bcrypt: user.password_hash?.startsWith('$2a$') || user.password_hash?.startsWith('$2b$')
     }));
     
-    // Simple password verification (in production, use bcrypt or similar)
-    // For now, just check if password matches (plaintext - NOT secure!)
-    console.log(`[Login] Comparing: provided="${password}" vs stored="${user.password_hash}"`);
+    // Verify password using bcrypt
+    console.log(`[Login] Verifying password for ${user.email}...`);
+    let passwordMatch = false;
     
-    if (user.password_hash !== password) {
+    try {
+      // Check if password is bcrypt hash or plaintext
+      if (user.password_hash?.startsWith('$2a$') || user.password_hash?.startsWith('$2b$')) {
+        // Use bcrypt comparison
+        passwordMatch = await bcrypt.compare(password, user.password_hash);
+        console.log(`[Login] Bcrypt comparison result: ${passwordMatch}`);
+      } else {
+        // Fallback to simple string comparison for plaintext passwords
+        passwordMatch = user.password_hash === password;
+        console.log(`[Login] Plaintext comparison result: ${passwordMatch}`);
+      }
+    } catch (bcryptError) {
+      console.error(`[Login] Bcrypt error:`, bcryptError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Password verification failed',
+          details: String(bcryptError)
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    if (!passwordMatch) {
       console.log(`[Login] Password mismatch for ${user.email}`);
       return new Response(
         JSON.stringify({ 
           error: 'Invalid email or password',
-          debug: `Password mismatch: got "${password}" but expected "${user.password_hash}"`
+          debug: 'Password does not match stored hash'
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
