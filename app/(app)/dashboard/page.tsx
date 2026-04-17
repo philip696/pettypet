@@ -60,7 +60,7 @@ export default function DashboardPage() {
         const userData = JSON.parse(userJson);
         setUser(userData);
 
-        const response = await fetch('/api/pets', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pets`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

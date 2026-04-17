@@ -184,7 +184,7 @@ export default function CalendarPage() {
         }
 
         // Fetch all pets
-        const petsResponse = await fetch('/api/pets', {
+        const petsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pets`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -195,7 +195,7 @@ export default function CalendarPage() {
         // Fetch tasks for each pet
         const allTasks: Task[] = [];
         for (const pet of pets) {
-          const tasksResponse = await fetch(`/api/tasks?petId=${pet.id}`, {
+          const tasksResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/tasks?petId=${pet.id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 

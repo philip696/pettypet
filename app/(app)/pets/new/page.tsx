@@ -133,7 +133,7 @@ export default function NewPetPage() {
       formData.append('petId', tempPetId);
 
       const token = localStorage.getItem('pettypet_token');
-      const response = await fetch('/api/upload', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -193,7 +193,7 @@ export default function NewPetPage() {
         payload.profile_picture_url = imageUrl;
       }
 
-      const response = await fetch('/api/pets', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/pets`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

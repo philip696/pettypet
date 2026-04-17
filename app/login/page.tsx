@@ -88,7 +88,7 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const endpoint = isSignUp ? '/api/auth/signup' : '/api/auth/login';
+      const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/${isSignUp ? 'signup' : 'login'}`;
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
