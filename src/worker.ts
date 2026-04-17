@@ -242,8 +242,9 @@ async function handleLogin(
       );
     }
 
-    // Generate a mock JWT token
-    const token = Buffer.from(JSON.stringify({ userId: user.id, email: user.email })).toString('base64');
+    // Generate a mock JWT token using base64url encoding
+    const tokenData = JSON.stringify({ userId: user.id, email: user.email });
+    const token = Buffer.from(tokenData).toString('base64');
 
     return new Response(
       JSON.stringify({
@@ -319,7 +320,8 @@ async function handleSignup(
     }
 
     const user = await createResponse.json();
-    const token = Buffer.from(JSON.stringify({ userId: user.id, email: user.email })).toString('base64');
+    const tokenData = JSON.stringify({ userId: user.id, email: user.email });
+    const token = Buffer.from(tokenData).toString('base64');
 
     return new Response(
       JSON.stringify({
