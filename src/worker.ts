@@ -252,11 +252,32 @@ async function handleLogin(
       }
     );
 
-    const users = await usersResponse.json();
+    if (!usersResponse.ok) {
+      const errorText = await usersResponse.text();
+      console.error(`[Login] User query failed: ${usersResponse.status} ${errorText}`);
+      return new Response(
+        JSON.stringify({ error: 'Database query failed', details: errorText }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    let users: any[] = [];
+    try {
+      users = await usersResponse.json();
+    } catch (e) {
+      console.error('Failed to parse users response:', e);
+      return new Response(
+        JSON.stringify({ error: 'Failed to parse response from database', details: String(e) }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log(`[Login] Query response status: ${usersResponse.status}, users found: ${Array.isArray(users) ? users.length : 'error'}`);
     
     if (!Array.isArray(users) || users.length === 0) {
+      console.log(`[Login] No user found with email: ${email}`);
       return new Response(
-        JSON.stringify({ error: 'Invalid email or password' }),
+        JSON.stringify({ error: 'Invalid email or password', details: 'User not found' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -265,12 +286,18 @@ async function handleLogin(
     
     // Simple password verification (in production, use bcrypt or similar)
     // For now, just check if password matches (plaintext - NOT secure!)
+    console.log(`[Login] User found: ${user.email}, checking password...`);
+    console.log(`[Login] Password provided: ${password}, stored hash: ${user.password_hash}`);
+    
     if (user.password_hash !== password) {
+      console.log(`[Login] Password mismatch for ${user.email}`);
       return new Response(
-        JSON.stringify({ error: 'Invalid email or password' }),
+        JSON.stringify({ error: 'Invalid email or password', details: 'Password mismatch' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log(`[Login] Authentication successful for ${user.email}`);
 
     // Generate a mock JWT token using base64url encoding
     const tokenData = JSON.stringify({ userId: user.id, email: user.email });
@@ -291,7 +318,7 @@ async function handleLogin(
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', error, 'Stack:', error instanceof Error ? error.stack : 'no stack');
     return new Response(
       JSON.stringify({ error: 'Login failed', details: String(error) }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
