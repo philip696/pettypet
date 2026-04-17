@@ -227,7 +227,7 @@ async function handleLogin(
     
     // Simple password verification (in production, use bcrypt or similar)
     // For now, just check if password matches (plaintext - NOT secure!)
-    if (user.password !== password) {
+    if (user.password_hash !== password) {
       return new Response(
         JSON.stringify({ error: 'Invalid email or password' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -289,7 +289,7 @@ async function handleSignup(
       },
       body: JSON.stringify({
         email,
-        password, // NOT secure - should use bcrypt or Supabase auth
+        password_hash: password, // NOT secure - should use bcrypt or Supabase auth
         name: name || email.split('@')[0],
       }),
     });
