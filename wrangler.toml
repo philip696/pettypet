@@ -1,17 +1,9 @@
+# Cloudflare Workers configuration (Workers-only, not Pages)
 name = "pettypet"
-type = "javascript"
-account_id = ""
-workers_dev = true
-route = ""
-zone_id = ""
-main = ".wrangler/wrap.js"
-build = { command = "npm run build" }
+main = "src/worker.ts"
 compatibility_date = "2026-04-16"
 compatibility_flags = ["nodejs_compat"]
 
-# Environment variables
-[env.production.vars]
-NODE_ENV = "production"
-
-[env.development.vars]
-NODE_ENV = "development"
+[build]
+command = "npm run build"
+watch_paths = ["src/**/*.ts"]
