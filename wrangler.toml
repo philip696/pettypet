@@ -1,4 +1,7 @@
-# Cloudflare Workers configuration (Workers-only, not Pages)
+# Cloudflare Workers configuration
+# GitHub Actions uses wrangler-action to deploy this
+# NOT for Cloudflare Pages auto-deployment
+
 name = "pettypet"
 main = "src/worker.ts"
 compatibility_date = "2026-04-16"
@@ -6,4 +9,3 @@ compatibility_flags = ["nodejs_compat"]
 
 [build]
 command = "npm run build"
-watch_paths = ["src/**/*.ts"]
