@@ -308,7 +308,7 @@ async function handleAuthEndpoint(
   } catch (error) {
     console.error('Auth endpoint error:', error);
     return new Response(
-      JSON.stringify({ error: 'Authentication failed' }),
+      JSON.stringify({ success: false, error: 'Authentication failed' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
@@ -324,7 +324,7 @@ async function handleLogin(
   
   if (!email || !password) {
     return new Response(
-      JSON.stringify({ error: 'Email and password required' }),
+      JSON.stringify({ success: false, error: 'Email and password required' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
@@ -335,7 +335,7 @@ async function handleLogin(
 
     if (!serviceKey) {
       return new Response(
-        JSON.stringify({ error: 'Service role key not configured' }),
+        JSON.stringify({ success: false, error: 'Service role key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -356,7 +356,7 @@ async function handleLogin(
       const errorText = await usersResponse.text();
       console.error(`[Login] User query failed: ${usersResponse.status} ${errorText}`);
       return new Response(
-        JSON.stringify({ error: 'Database query failed', details: errorText }),
+        JSON.stringify({ success: false, error: 'Database query failed' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -367,7 +367,7 @@ async function handleLogin(
     } catch (e) {
       console.error('Failed to parse users response:', e);
       return new Response(
-        JSON.stringify({ error: 'Failed to parse response from database', details: String(e) }),
+        JSON.stringify({ success: false, error: 'Failed to parse response from database' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -378,8 +378,8 @@ async function handleLogin(
       console.log(`[Login] No user found with email: ${email}`);
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: 'Invalid email or password',
-          debug: 'User not found in database'
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -403,9 +403,8 @@ async function handleLogin(
       console.log(`[Login] Password mismatch for ${user.email}`);
       return new Response(
         JSON.stringify({ 
+          success: false,
           error: 'Invalid email or password',
-          debug: 'Password does not match stored hash',
-          email: user.email
         }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -419,14 +418,14 @@ async function handleLogin(
 
     return new Response(
       JSON.stringify({
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        },
-        session: {
-          access_token: token,
-          token_type: 'Bearer',
+        success: true,
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+          },
+          token: token,
         },
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -437,9 +436,8 @@ async function handleLogin(
     console.error('Login error stack:', error instanceof Error ? error.stack : 'no stack');
     return new Response(
       JSON.stringify({ 
+        success: false,
         error: 'Login failed', 
-        details: String(error),
-        errorType: error instanceof Error ? error.constructor.name : typeof error
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
