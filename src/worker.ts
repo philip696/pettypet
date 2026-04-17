@@ -69,15 +69,15 @@ export default {
 
           case apiPath.startsWith('/tasks'):
             console.log(`[Route] Matched /tasks endpoint`);
-            return await handleTasksEndpoint(apiPath, method, body, env, headers, corsHeaders);
+            return await handleTasksEndpoint(apiPath, method, body, env, corsHeaders);
 
           case apiPath.startsWith('/pets'):
             console.log(`[Route] Matched /pets endpoint`);
-            return await handlePetsEndpoint(apiPath, method, body, env, headers, corsHeaders);
+            return await handlePetsEndpoint(apiPath, method, body, env, corsHeaders);
 
           case apiPath.startsWith('/users'):
             console.log(`[Route] Matched /users endpoint`);
-            return await handleUsersEndpoint(apiPath, method, body, env, headers, corsHeaders);
+            return await handleUsersEndpoint(apiPath, method, body, env, corsHeaders);
 
           default:
             console.log(`[Route] No match for path: ${apiPath}`);
@@ -234,8 +234,7 @@ async function callSupabaseAPI(
   endpoint: string,
   method: string,
   body: any,
-  env: Env,
-  headers: Record<string, any>
+  env: Env
 ): Promise<Response> {
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
   const apiKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -251,14 +250,13 @@ async function callSupabaseAPI(
   // Use service role key if available (for RLS bypass), otherwise use anon key
   const key = serviceKey || apiKey;
   console.log(`[Supabase] Using ${serviceKey ? 'service role' : 'anon'} key`);
-
+  
   const requestInit: RequestInit = {
     method,
     headers: {
       'apikey': apiKey,
       'Authorization': `Bearer ${key}`,
       'Content-Type': 'application/json',
-      ...headers,
     },
   };
 
@@ -577,7 +575,6 @@ async function handleTasksEndpoint(
   method: string,
   body: any,
   env: Env,
-  headers: Record<string, string>,
   corsHeaders: Record<string, string>
 ): Promise<Response> {
   try {
@@ -587,8 +584,7 @@ async function handleTasksEndpoint(
       `/rest/v1/tasks${subPath}`,
       method,
       body,
-      env,
-      headers
+      env
     );
     const text = await response.text();
     return new Response(text, {
@@ -610,7 +606,6 @@ async function handlePetsEndpoint(
   method: string,
   body: any,
   env: Env,
-  headers: Record<string, string>,
   corsHeaders: Record<string, string>
 ): Promise<Response> {
   try {
@@ -625,8 +620,7 @@ async function handlePetsEndpoint(
       apiEndpoint,
       method,
       body,
-      env,
-      headers
+      env
     );
     
     console.log(`[Pets] Supabase response status: ${response.status}`);
@@ -652,7 +646,6 @@ async function handleUsersEndpoint(
   method: string,
   body: any,
   env: Env,
-  headers: Record<string, string>,
   corsHeaders: Record<string, string>
 ): Promise<Response> {
   try {
@@ -662,8 +655,7 @@ async function handleUsersEndpoint(
       `/rest/v1/users${subPath}`,
       method,
       body,
-      env,
-      headers
+      env
     );
     const text = await response.text();
     return new Response(text, {

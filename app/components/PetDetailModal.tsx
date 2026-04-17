@@ -39,6 +39,8 @@ export function PetDetailModal({ petId, isOpen, onClose }: PetDetailModalProps) 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  console.log('[PetDetailModal] isOpen:', isOpen, 'petId:', petId);
+
   useEffect(() => {
     if (!isOpen || !petId) return;
 
