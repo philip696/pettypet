@@ -2,7 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // Standalone output for both Cloudflare Workers and Pages
+  // Use standalone for full SSR support with dynamic routes
+  // Deploy to Cloudflare Workers which supports Node.js
   output: 'standalone',
 
   // Environment variables

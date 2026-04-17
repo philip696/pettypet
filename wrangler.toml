@@ -1,25 +1,17 @@
 name = "pettypet"
+type = "javascript"
+account_id = ""
 workers_dev = true
-main = "dist/worker.js"
-compatibility_date = "2026-04-16"
-
-# Custom build configuration
+route = ""
+zone_id = ""
+main = ".wrangler/wrap.js"
 build = { command = "npm run build" }
-
-# Pages configuration
-pages_build_caching = true
-
-# Cloudflare Pages deployment
-[env.production.pages_build_caching]
-value = true
+compatibility_date = "2026-04-16"
+compatibility_flags = ["nodejs_compat"]
 
 # Environment variables
-[env.development.vars]
-NODE_ENV = "development"
-
 [env.production.vars]
 NODE_ENV = "production"
 
-# Triggers - auto-deploy when main branch updates
-[triggers]
-crons = []
+[env.development.vars]
+NODE_ENV = "development"

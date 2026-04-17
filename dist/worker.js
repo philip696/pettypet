@@ -1,1 +1,0 @@
-export default { async fetch(request) { return new Response("Worker Ready", {status:200}); } }

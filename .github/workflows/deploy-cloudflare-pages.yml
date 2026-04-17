@@ -11,7 +11,7 @@ jobs:
     
     environment:
       name: staging
-      url: https://${{ env.CF_PAGES_URL }}
+      url: https://pettypet-pages.philip-dewanto.workers.dev
     
     steps:
       - uses: actions/checkout@v4
@@ -33,11 +33,17 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           NODE_ENV: production
       
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+      - name: Deploy Pages using Wrangler
+        uses: cloudflare/wrangler-action@v3
         with:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          projectName: pettypet
-          directory: .next
-          productionBranch: main
+          wranglerVersion: '3.x'
+          secrets: |
+            NEXT_PUBLIC_SUPABASE_URL
+            NEXT_PUBLIC_SUPABASE_ANON_KEY
+            JWT_SECRET
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
