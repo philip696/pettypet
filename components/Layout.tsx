@@ -24,22 +24,31 @@ export default function Layout({ children }: LayoutProps) {
 
   // Get user from localStorage
   useEffect(() => {
-    const token = localStorage.getItem('pettypet_token');
-    const userJson = localStorage.getItem('pettypet_user');
+    // Add a small delay to ensure localStorage is ready
+    const timer = setTimeout(() => {
+      const token = localStorage.getItem('pettypet_token');
+      const userJson = localStorage.getItem('pettypet_user');
 
-    if (!token || !userJson) {
-      router.push('/login');
-      return;
-    }
+      console.log('[Layout] Auth check - token exists:', !!token, 'user exists:', !!userJson);
 
-    try {
-      const userData = JSON.parse(userJson);
-      setUser(userData);
-    } catch {
-      router.push('/login');
-    } finally {
-      setLoading(false);
-    }
+      if (!token || !userJson) {
+        console.log('[Layout] No auth found, redirecting to login');
+        router.push('/login');
+        return;
+      }
+
+      try {
+        const userData = JSON.parse(userJson);
+        console.log('[Layout] User loaded:', userData.email);
+        setUser(userData);
+        setLoading(false);
+      } catch (e) {
+        console.error('[Layout] Failed to parse user:', e);
+        router.push('/login');
+      }
+    }, 100); // Small delay to ensure DOM is ready
+
+    return () => clearTimeout(timer);
   }, [router]);
 
   const handleLogout = () => {
