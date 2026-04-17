@@ -155,11 +155,34 @@ async function handleAuthEndpoint(
   corsHeaders: Record<string, string>
 ): Promise<Response> {
   try {
-    // Route auth requests to Supabase
+    // Map frontend auth paths to Supabase auth endpoints
+    // path comes in as /auth/login, /auth/signup, /auth/me, etc.
+    const authPath = path.substring(5); // Remove '/auth' prefix
+    
+    let supabasePath: string;
+    let requestBody = body;
+    
+    if (authPath === '/login') {
+      supabasePath = '/auth/v1/token';
+      // Supabase requires grant_type for token endpoint
+      requestBody = {
+        ...body,
+        grant_type: 'password',
+      };
+    } else if (authPath === '/signup') {
+      supabasePath = '/auth/v1/signup';
+    } else if (authPath === '/logout') {
+      supabasePath = '/auth/v1/logout';
+    } else if (authPath === '/me') {
+      supabasePath = '/auth/v1/user';
+    } else {
+      supabasePath = `/auth/v1${authPath}`;
+    }
+
     const response = await callSupabaseAPI(
-      `/auth/v1${path}`,
+      supabasePath,
       method,
-      body,
+      requestBody,
       env,
       {}
     );
