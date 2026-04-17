@@ -566,8 +566,10 @@ async function handleTasksEndpoint(
   corsHeaders: Record<string, string>
 ): Promise<Response> {
   try {
+    // Remove leading /tasks if present, since we add it in the API call
+    const subPath = path === '/tasks' ? '' : path.replace('/tasks', '');
     const response = await callSupabaseAPI(
-      `/rest/v1/tasks${path}`,
+      `/rest/v1/tasks${subPath}`,
       method,
       body,
       env,
@@ -597,8 +599,10 @@ async function handlePetsEndpoint(
   corsHeaders: Record<string, string>
 ): Promise<Response> {
   try {
+    // Remove leading /pets if present, since we add it in the API call
+    const subPath = path === '/pets' ? '' : path.replace('/pets', '');
     const response = await callSupabaseAPI(
-      `/rest/v1/pets${path}`,
+      `/rest/v1/pets${subPath}`,
       method,
       body,
       env,
@@ -628,8 +632,10 @@ async function handleUsersEndpoint(
   corsHeaders: Record<string, string>
 ): Promise<Response> {
   try {
+    // Remove leading /users if present, since we add it in the API call
+    const subPath = path === '/users' ? '' : path.replace('/users', '');
     const response = await callSupabaseAPI(
-      `/rest/v1/users${path}`,
+      `/rest/v1/users${subPath}`,
       method,
       body,
       env,
