@@ -345,7 +345,7 @@ async function handleSignup(
 
 // Get current user from token
 async function handleGetUser(
-  body: any,
+  _body: any,
   env: Env,
   corsHeaders: Record<string, string>
 ): Promise<Response> {
